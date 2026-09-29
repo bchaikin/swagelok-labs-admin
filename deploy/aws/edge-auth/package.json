@@ -1,0 +1,19 @@
+{
+    "name": "swagelok-labs-admin-edge-auth",
+    "private": true,
+    "version": "0.1.0",
+    "type": "commonjs",
+    "description": "Lambda@Edge viewer-request authorizer: Cognito hosted UI login + admins group check for admin.swageloklabs.com",
+    "dependencies": {
+        "adm-zip": "^0.6.1",
+        "cognito-at-edge": "^1.5.0",
+        "aws-jwt-verify": "^4.0.1"
+    },
+    "devDependencies": {
+        "esbuild": "^0.28.0",
+        "adm-zip": "^0.5.16"
+    },
+    "allowScripts": {
+        "esbuild@0.28.2": true
+    }
+}
