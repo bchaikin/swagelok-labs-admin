@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { api, ApiError, type Actor, type AdminUser, type Site } from '../lib/api.ts'
 import { Button, Card, Chip, Modal, Notice, Spinner, Toggle, fmtDate, statusLabel, statusTone } from '../components/ui.tsx'
 
@@ -141,13 +142,8 @@ export default function UsersPage({ me, sites, adminGroup, onChanged }: Props) {
                       />
                     </td>
                     <td className="px-3 py-2.5 text-xs text-ink-soft" title={`Updated ${fmtDate(u.updated)}`}>{fmtDate(u.created)}</td>
-                    <td className="relative px-3 py-2.5 text-right">
-                      <Button tone="secondary" small onClick={() => setMenuFor(menuFor === u.username ? null : u.username)} title="More actions">
-                        Actions
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden><path d="m6 9 6 6 6-6" /></svg>
-                      </Button>
-                      {menuFor === u.username && (
-                        <div className="absolute right-3 z-20 mt-1 w-56 rounded-xl border border-line bg-white py-1 text-left shadow-lg" role="menu">
+                    <td className="px-3 py-2.5 text-right">
+                      <ActionsMenu open={menuFor === u.username} onToggle={(open) => setMenuFor(open ? u.username : null)}>
                           {u.status === 'FORCE_CHANGE_PASSWORD' && (
                             <MenuItem onClick={() => void run(u.username, () => api.action(u.username, 'resend-invite'), `Invitation re-sent to ${u.email}`)}>Re-send invitation</MenuItem>
                           )}
@@ -159,8 +155,7 @@ export default function UsersPage({ me, sites, adminGroup, onChanged }: Props) {
                           {!self && (
                             <MenuItem danger onClick={() => confirmThen(`Permanently delete ${u.email}? This cannot be undone.`, u.username, async () => { await api.remove(u.username); setUsers((l) => (l ?? []).filter((x) => x.username !== u.username)) }, `Deleted ${u.email}`)}>Delete user</MenuItem>
                           )}
-                        </div>
-                      )}
+                      </ActionsMenu>
                     </td>
                   </tr>
                 )
@@ -182,6 +177,67 @@ export default function UsersPage({ me, sites, adminGroup, onChanged }: Props) {
         />
       )}
     </div>
+  )
+}
+
+/**
+ * "Actions" button + dropdown. The menu is rendered through a portal with fixed positioning so the
+ * table card's overflow (needed for horizontal scrolling) cannot clip it. Closes on outside click,
+ * Escape, scroll or resize.
+ */
+function ActionsMenu({ open, onToggle, children }: { open: boolean; onToggle: (open: boolean) => void; children: React.ReactNode }) {
+  const btn = useRef<HTMLButtonElement>(null)
+  const menu = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
+
+  useLayoutEffect(() => {
+    if (!open || !btn.current) { setPos(null); return }
+    const r = btn.current.getBoundingClientRect()
+    setPos({ top: r.bottom + 4, right: Math.max(8, window.innerWidth - r.right) })
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const close = () => onToggle(false)
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (!menu.current?.contains(t) && !btn.current?.contains(t)) close()
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
+  }, [open, onToggle])
+
+  return (
+    <>
+      <button
+        ref={btn}
+        type="button"
+        onClick={() => onToggle(!open)}
+        title="More actions"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-semibold text-ink transition-colors hover:border-brand/60 hover:text-brand"
+      >
+        Actions
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      {open && pos &&
+        createPortal(
+          <div ref={menu} role="menu" style={{ position: 'fixed', top: pos.top, right: pos.right }} className="z-50 w-56 rounded-xl border border-line bg-white py-1 text-left shadow-lg">
+            {children}
+          </div>,
+          document.body,
+        )}
+    </>
   )
 }
 
