@@ -45,7 +45,7 @@ EDGE_FUNCTION=swagelok-labs-admin-edge-auth
 NONCE_PARAM=/swagelok-labs-admin/edge-auth/nonce-secret
 
 ADMIN_GROUP=admins
-SITE_GROUPS=(app:locator app:sscexpert app:portfolioplanner)
+SITE_GROUPS=(app:locator app:sscexpert app:portfolioplanner app:markets)
 BOOTSTRAP_ADMIN=bryan.chaikin@swagelok.com
 
 aws() { command aws --region "$REGION" --output text "$@" | tr -d '\r'; }

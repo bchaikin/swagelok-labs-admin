@@ -8,7 +8,7 @@ User management for the shared Cognito user pool (`us-east-1_65EMdls09`, hosted 
 (`C:\Users\bryan\source\ssc-locator`), SSC Expert Finder (`C:\Users\bryan\source\ssc-expert-finder`)
 and Portfolio Planner (`C:\Users\bryan\source\swagelok-portfolio-planner`). Hosted at
 https://admin.swageloklabs.com. Access to each site is a Cognito group (`app:locator`,
-`app:sscexpert`, `app:portfolioplanner`); `admins` may use this app. Each site's own gate enforces
+`app:sscexpert`, `app:portfolioplanner`, `app:markets` for the Market Atlas at markets.swageloklabs.com); `admins` may use this app. Each site's own gate enforces
 its group (Lambda@Edge for the two static sites, the FastAPI app for the Expert Finder).
 
 ## Layout

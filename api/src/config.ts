@@ -10,6 +10,7 @@ export const DEFAULT_SITES: Site[] = [
   { group: 'app:locator', name: 'SSC Locator', url: 'https://locator.swageloklabs.com' },
   { group: 'app:sscexpert', name: 'SSC Expert Finder', url: 'https://sscexpert.swageloklabs.com' },
   { group: 'app:portfolioplanner', name: 'Portfolio Planner', url: 'https://portfolioplanner.swageloklabs.com' },
+  { group: 'app:markets', name: 'Market Atlas', url: 'https://markets.swageloklabs.com' },
 ]
 
 function need(name: string): string {
